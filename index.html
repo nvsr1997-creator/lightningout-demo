@@ -32,9 +32,7 @@
         <div id="lightningOutContainer" style="display:none;">
             <p class="slds-text-color_success slds-m-bottom_medium" style="font-weight: bold;">✓ Authenticated with Salesforce!</p>
             
-            <lightning-out-application app-id="1UsIf0000004DAMKA2" components="c-external-demo-component"></lightning-out-application>
-            
-            <c-external-demo-component></c-external-demo-component>
+            <div id="lwcHostArea"></div>
         </div>
     </div>
 
@@ -60,18 +58,24 @@
                     // Frontdoor URL క్రియేషన్
                     const frontdoorUrl = `${ORG_URL}/services/oauth2/frontdoor?access_token=${token}`;
                     
-                    const loApp = document.querySelector("lightning-out-application");
-                    if (loApp) {
-                        loApp.setAttribute("frontdoor-url", frontdoorUrl);
-                        console.log("🔒 Frontdoor URL successfully injected!");
-                    }
+                    // 🚀 ఫిక్స్: టోకెన్ మరియు ఫ్రంట్‌డోర్ యుఆర్‌ఎల్ రెడీ అయ్యాకే ట్యాగులను క్రియేట్ చేస్తున్నాం
+                    const hostArea = document.getElementById("lwcHostArea");
+                    hostArea.innerHTML = `
+                        <lightning-out-application 
+                            app-id="1UsIf0000004DAMKA2" 
+                            components="c-external-demo-component" 
+                            frontdoor-url="${frontdoorUrl}">
+                        </lightning-out-application>
+                        <c-external-demo-component></c-external-demo-component>
+                    `;
+                    
+                    console.log("🔒 Lightning Out Tags dynamically injected with Frontdoor URL!");
                 }
             }
         }
 
-        // 2. Redirects user to Salesforce OAuth Login Screen తో పాటు పర్మిషన్ స్కోప్స్ మరియు కన్సెంట్ అడుగుతున్నాం
+        // 2. Redirects user to Salesforce OAuth Login Screen
         function loginToSalesforce() {
-            // 🚀 ఫిక్స్: చివర్లో &scope=api%20web&prompt=consent యాడ్ చేశాం
             const authUrl = `${ORG_URL}/services/oauth2/authorize?response_type=token&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=api%20web&prompt=consent`;
             window.location.href = authUrl;
         }
