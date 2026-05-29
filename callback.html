@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OAuth Callback</title>
+    <style>
+        body { font-family: Arial; text-align: center; padding: 50px; }
+        h2 { color: #0070d2; }
+    </style>
+</head>
+<body>
+    <h2>Processing Login...</h2>
+    <p>Please wait while we complete authentication.</p>
+
+    <script>
+        // OAuth callback logic
+        function handleCallback() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            const state = urlParams.get('state');
+            const error = urlParams.get('error');
+
+            if (error) {
+                console.error('OAuth Error:', error);
+                document.body.innerHTML += '<p style="color:red;">Login Failed: ' + error + '</p>';
+                return;
+            }
+
+            if (code) {
+                console.log('✅ Authorization Code Received:', code);
+                // Ippudu ee code ni main page ki pass cheyali (postMessage or localStorage or redirect)
+                window.opener && window.opener.postMessage({ type: 'oauth_callback', code: code }, '*');
+                document.body.innerHTML += '<p style="color:green;">✅ Authentication Successful!<br>Returning to main page...</p>';
+                
+                // 2 seconds tarwata main page ki redirect
+                setTimeout(() => {
+                    window.close(); // popup ayithe
+                    window.location.href = '/lightningout-demo/'; // main page
+                }, 2000);
+            }
+        }
+
+        window.onload = handleCallback;
+    </script>
+</body>
+</html>
