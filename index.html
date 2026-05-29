@@ -5,32 +5,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lightning Out 2.0 Demo</title>
     
-    <!-- Lightning Out 2.0 Script (Nee org correct ga undi) -->
     <script type="text/javascript" async src="https://siva15071997-dev-ed.my.salesforce.com/lightning/lightning.out.latest/index.iife.prod.js"></script>
+    
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        h1 { color: #0070d2; }
+    </style>
 </head>
 <body>
     <h1>Lightning Out 2.0 Testing</h1>
     <p>Simple Name Display Component</p>
 
-    <!-- Main Wrapper -->
+    <!-- Lightning Out Container - Empty undali -->
     <lightning-out-application 
         id="loApp"
         app-id="1UsIf0000004DAMKA2" 
         components="c-name-display"
-        frontdoor-url="">   <!-- ←←← Idi important! Dynamic ga set cheyali -->
+        frontdoor-url="">
     </lightning-out-application>
 
-    <!-- Nee Component -->
-    <c-name-display></c-name-display>
+    <div id="componentContainer"></div>   <!-- ← Component dynamically add avuthundi -->
 
     <script>
-        // Event listeners (debug kosam)
+        // Events
         document.addEventListener('lo.application.ready', () => {
-            console.log('✅ Lightning Out 2.0 Application Ready!');
+            console.log('✅ Lightning Out 2.0 Ready!');
+            
+            // Dynamically create and add your component
+            const container = document.getElementById('componentContainer');
+            const nameComp = document.createElement('c-name-display');
+            container.appendChild(nameComp);
         });
 
         document.addEventListener('lo.component.ready', (event) => {
-            console.log('✅ Component Loaded:', event.detail);
+            console.log('✅ Component Ready:', event.detail);
         });
 
         document.addEventListener('lo.component.error', (event) => {
