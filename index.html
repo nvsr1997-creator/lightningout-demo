@@ -41,6 +41,7 @@
     <script>
         // Configuration Variables
         const ORG_URL = "https://siva15071997-dev-ed.my.salesforce.com";
+        const LIGHTNING_URL = "https://siva15071997-dev-ed.lightning.force.com"; // 👈 కొత్తగా లైట్నింగ్ డొమైన్ యాడ్ చేశాం
         const REDIRECT_URI = "https://nvsr1997-creator.github.io/lightningout-demo/";
         const CLIENT_ID = "3MVG9n_HvETGhr3DGIEyTb2PfjZeBM9JVs57xvMav0P79W20cMf5oy._0T.wk2hQIqYN8DNO7Mg5ntt54Z9cn"; 
 
@@ -49,23 +50,21 @@
             const hash = window.location.hash;
             if (hash && hash.includes("access_token=")) {
                 
-                // URL నుండి క్లీన్ గా access_token ని వేరు చేస్తున్నాం
                 const params = new URLSearchParams(hash.substring(1));
                 const token = params.get("access_token");
                 
                 if (token) {
-                    // UI ని మార్చడం
+                    // UI మార్చడం
                     document.getElementById("loginSection").style.display = "none";
                     document.getElementById("lightningOutContainer").style.display = "block";
                     
-                    // 🚀 ఇక్కడ ఉంది మ్యాజిక్: Frontdoor URL ని క్రియేట్ చేస్తున్నాం
-                    const frontdoorUrl = `${ORG_URL}/services/oauth2/frontdoor?access_token=${token}`;
+                    // 🚀 ఫిక్స్: ఇక్కడ ORG_URL కి బదులుగా LIGHTNING_URL వాడుతున్నాం
+                    const frontdoorUrl = `${LIGHTNING_URL}/services/oauth2/frontdoor?access_token=${token}`;
                     
-                    // దాన్ని లైట్నింగ్ అవుట్ అప్లికేషన్ ట్యాగ్ కి ఇంజెక్ట్ చేస్తున్నాం
                     const loApp = document.querySelector("lightning-out-application");
                     if (loApp) {
                         loApp.setAttribute("frontdoor-url", frontdoorUrl);
-                        console.log("🔒 Frontdoor URL successfully injected into Lightning Out 2.0!");
+                        console.log("🔒 Frontdoor URL successfully injected into Lightning Domain!");
                     }
                 }
             }
