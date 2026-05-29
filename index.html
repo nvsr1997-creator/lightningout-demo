@@ -37,45 +37,56 @@
     </div>
 
     <script>
-        // Configuration Variables
+        // Configuration parameters for OAuth flow and Salesforce Org target
         const ORG_URL = "https://siva15071997-dev-ed.my.salesforce.com";
         const REDIRECT_URI = "https://nvsr1997-creator.github.io/lightningout-demo/";
         const CLIENT_ID = "3MVG9n_HvETGhr3DGIEyTb2PfjZeBM9JVs57xvMav0P79W20cMf5oy._0T.wk2hQIqYN8DNO7Mg5ntt54Z9cn"; 
 
-        // 1. Check if OAuth Access Token exists in the URL after login redirect
+        // Automatically runs on page load to check for post-login redirect parameters
         window.onload = function() {
             const hash = window.location.hash;
+            
+            // Check if the URL string fragment contains the OAuth access token
             if (hash && hash.includes("access_token=")) {
-                
                 const params = new URLSearchParams(hash.substring(1));
                 const token = params.get("access_token");
                 
                 if (token) {
-                    // UI మార్చడం
+                    // Update UI views by hiding login controls and showing the LWC container
                     document.getElementById("loginSection").style.display = "none";
                     document.getElementById("lightningOutContainer").style.display = "block";
                     
-                    // Frontdoor URL క్రియేషన్
+                    // Generate a secure Frontdoor URL to bridge the active OAuth token session
                     const frontdoorUrl = `${ORG_URL}/services/oauth2/frontdoor?access_token=${token}`;
                     
-                    // 🚀 ఫిక్స్: టోకెన్ మరియు ఫ్రంట్‌డోర్ యుఆర్‌ఎల్ రెడీ అయ్యాకే ట్యాగులను క్రియేట్ చేస్తున్నాం
+                    // Safely isolate the host zone and clear potential native layout wrappers
                     const hostArea = document.getElementById("lwcHostArea");
-                    hostArea.innerHTML = `
-                        <lightning-out-application 
-                            app-id="1UsIf0000004DAMKA2" 
-                            components="c-external-demo-component" 
-                            frontdoor-url="${frontdoorUrl}">
-                        </lightning-out-application>
-                        <c-external-demo-component></c-external-demo-component>
-                    `;
+                    hostArea.innerHTML = ""; 
                     
-                    console.log("🔒 Lightning Out Tags dynamically injected with Frontdoor URL!");
+                    // CRITICAL FIX: Programmatically construct elements via the standard DOM API.
+                    // This eliminates stray text nodes or whitespace that trigger framework initialization crashes.
+                    
+                    // 1. Instantiating the core Lightning Out context tag
+                    const loApp = document.createElement("lightning-out-application");
+                    loApp.setAttribute("app-id", "1UsIf0000004DAMKA2");
+                    loApp.setAttribute("components", "c-external-demo-component");
+                    loApp.setAttribute("frontdoor-url", frontdoorUrl);
+                    
+                    // 2. Instantiating the targeted custom LWC element instance
+                    const lwcComponent = document.createElement("c-external-demo-component");
+                    
+                    // 3. Appending nodes cleanly to the DOM tree in structural order
+                    hostArea.appendChild(loApp);
+                    hostArea.appendChild(lwcComponent);
+                    
+                    console.log("🔒 Lightning Out Elements cleanly created and appended!");
                 }
             }
         }
 
-        // 2. Redirects user to Salesforce OAuth Login Screen
+        // Redirects the user browser to the Salesforce OAuth 2.0 User-Agent Authentication flow
         function loginToSalesforce() {
+            // Note: Scopes 'api' and 'web' are explicitly declared alongside 'prompt=consent' for structural session sync
             const authUrl = `${ORG_URL}/services/oauth2/authorize?response_type=token&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=api%20web&prompt=consent`;
             window.location.href = authUrl;
         }
