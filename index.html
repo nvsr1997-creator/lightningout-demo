@@ -9,14 +9,16 @@
     
     <style>
         body { font-family: Arial, sans-serif; padding: 20px; }
-        h1 { color: #0070d2; }
+        button { padding: 12px 24px; font-size: 16px; background: #0070d2; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #005bb8; }
     </style>
 </head>
 <body>
     <h1>Lightning Out 2.0 Testing</h1>
     <p>Simple Name Display Component</p>
 
-    <!-- Lightning Out Container - Empty undali -->
+    <button onclick="startLogin()">Login to Salesforce & Load Component</button>
+
     <lightning-out-application 
         id="loApp"
         app-id="1UsIf0000004DAMKA2" 
@@ -24,25 +26,46 @@
         frontdoor-url="">
     </lightning-out-application>
 
-    <div id="componentContainer"></div>   <!-- ← Component dynamically add avuthundi -->
+    <div id="componentContainer" style="margin-top: 20px;"></div>
 
     <script>
-        // Events
-        document.addEventListener('lo.application.ready', () => {
-            console.log('✅ Lightning Out 2.0 Ready!');
-            
-            // Dynamically create and add your component
-            const container = document.getElementById('componentContainer');
-            const nameComp = document.createElement('c-name-display');
-            container.appendChild(nameComp);
-        });
+        const CLIENT_ID = "3MVG9n_HvETGhr3DGIEyTb2PfjZeBM9JVs57xvMav0P79W20cMf5oy._0T.wk2hQIqYN8DNO7Mg5ntt54Z9cn";
+        const REDIRECT_URI = "https://nvsr1997-creator.github.io/lightningout-demo/callback.html";
+        const ORG_URL = "https://siva15071997-dev-ed.my.salesforce.com";
 
-        document.addEventListener('lo.component.ready', (event) => {
-            console.log('✅ Component Ready:', event.detail);
-        });
+        // Generate PKCE Code Verifier and Challenge
+        async function generatePKCE() {
+            const verifier = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32))))
+                .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+            const encoder = new TextEncoder();
+            const data = await crypto.subtle.digest('SHA-256', encoder.encode(verifier));
+            const challenge = btoa(String.fromCharCode(...new Uint8Array(data)))
+                .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+            return { verifier, challenge };
+        }
 
-        document.addEventListener('lo.component.error', (event) => {
-            console.error('❌ Error:', event.detail);
+        async function startLogin() {
+            const { verifier, challenge } = await generatePKCE();
+            sessionStorage.setItem('pkce_verifier', verifier);
+
+            const authUrl = `${ORG_URL}/services/oauth2/authorize?` +
+                `response_type=code` +
+                `&client_id=${encodeURIComponent(CLIENT_ID)}` +
+                `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
+                `&scope=web full api` +
+                `&code_challenge=${challenge}` +
+                `&code_challenge_method=S256` +
+                `&state=lo2demo`;
+
+            window.location.href = authUrl;
+        }
+
+        // This will run in callback.html after redirect
+        window.addEventListener('message', async (event) => {
+            if (event.data.type === 'oauth_callback') {
+                const code = event.data.code;
+                await exchangeCodeForToken(code);
+            }
         });
     </script>
 </body>
