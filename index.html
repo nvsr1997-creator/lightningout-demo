@@ -1,96 +1,41 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lightning Out 2.0 Test Page</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/design-system/2.15.8/styles/salesforce-lightning-design-system.min.css" />
-    
-    <style>
-        body { padding: 30px; background-color: #fafafb; font-family: sans-serif; }
-        .card-container { max-width: 700px; margin: 30px auto; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .btn-center { text-align: center; margin-top: 20px; }
-    </style>
-
-    <script type="text/javascript" src="https://siva15071997-dev-ed.my.salesforce.com/lightning/lightning.out.latest/index.iife.prod.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lightning Out 2.0 Test Host</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      background: #f7f7f7;
+      color: #222;
+    }
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 24px;
+      max-width: 800px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+    h1 {
+      margin-top: 0;
+    }
+    .note {
+      margin-top: 16px;
+      padding: 12px;
+      background: #eef6ff;
+      border-left: 4px solid #0176d3;
+    }
+  </style>
 </head>
 <body>
-
-    <div class="card-container">
-        <h1 class="slds-text-heading_large slds-m-bottom_small" style="font-weight: bold;">Lightning Out 2.0 Test Page</h1>
-        <p class="slds-text-body_medium slds-text-color_weak">Host System: GitHub Pages</p>
-        
-        <hr class="slds-m-vertical_medium" />
-
-        <div id="loginSection" class="btn-center">
-            <p class="slds-m-bottom_medium">Please login to authorize Salesforce to display the LWC:</p>
-            <button class="slds-button slds-button_brand" onclick="loginToSalesforce()">
-                Connect & Login to Salesforce
-            </button>
-        </div>
-
-        <div id="lightningOutContainer" style="display:none;">
-            <p class="slds-text-color_success slds-m-bottom_medium" style="font-weight: bold;">✓ Authenticated with Salesforce!</p>
-            
-            <div id="lwcHostArea"></div>
-        </div>
+  <div class="card">
+    <h1>GitHub Pages Host Site Ready</h1>
+    <p>This page will be used as the external host site for Salesforce Lightning Out 2.0 testing.</p>
+    <div class="note">
+      Step 1 complete ayyaka, next step lo Salesforce settings configure chestham.
     </div>
-
-    <script>
-        // Configuration parameters for OAuth flow and Salesforce Org target
-        const ORG_URL = "https://siva15071997-dev-ed.my.salesforce.com";
-        const REDIRECT_URI = "https://nvsr1997-creator.github.io/lightningout-demo/";
-        const CLIENT_ID = "3MVG9n_HvETGhr3DGIEyTb2PfjZeBM9JVs57xvMav0P79W20cMf5oy._0T.wk2hQIqYN8DNO7Mg5ntt54Z9cn"; 
-
-        // Automatically runs on page load to check for post-login redirect parameters
-        window.onload = function() {
-            const hash = window.location.hash;
-            
-            // Check if the URL string fragment contains the OAuth access token
-            if (hash && hash.includes("access_token=")) {
-                const params = new URLSearchParams(hash.substring(1));
-                const token = params.get("access_token");
-                
-                if (token) {
-                    // Update UI views by hiding login controls and showing the LWC container
-                    document.getElementById("loginSection").style.display = "none";
-                    document.getElementById("lightningOutContainer").style.display = "block";
-                    
-                    // Generate a secure Frontdoor URL to bridge the active OAuth token session
-                    const frontdoorUrl = `${ORG_URL}/services/oauth2/frontdoor?access_token=${token}`;
-                    
-                    // Safely isolate the host zone and clear potential native layout wrappers
-                    const hostArea = document.getElementById("lwcHostArea");
-                    hostArea.innerHTML = ""; 
-                    
-                    // CRITICAL FIX: Programmatically construct elements via the standard DOM API.
-                    // This eliminates stray text nodes or whitespace that trigger framework initialization crashes.
-                    
-                    // 1. Instantiating the core Lightning Out context tag
-                    const loApp = document.createElement("lightning-out-application");
-                    loApp.setAttribute("app-id", "1UsIf0000004DAMKA2");
-                    loApp.setAttribute("components", "c-external-demo-component");
-                    loApp.setAttribute("frontdoor-url", frontdoorUrl);
-                    
-                    // 2. Instantiating the targeted custom LWC element instance
-                    const lwcComponent = document.createElement("c-external-demo-component");
-                    
-                    // 3. Appending nodes cleanly to the DOM tree in structural order
-                    hostArea.appendChild(loApp);
-                    hostArea.appendChild(lwcComponent);
-                    
-                    console.log("🔒 Lightning Out Elements cleanly created and appended!");
-                }
-            }
-        }
-
-        // Redirects the user browser to the Salesforce OAuth 2.0 User-Agent Authentication flow
-        function loginToSalesforce() {
-            // Note: Scopes 'api' and 'web' are explicitly declared alongside 'prompt=consent' for structural session sync
-            const authUrl = `${ORG_URL}/services/oauth2/authorize?response_type=token&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=api%20web&prompt=consent`;
-            window.location.href = authUrl;
-        }
-    </script>
-
+  </div>
 </body>
 </html>
