@@ -11,7 +11,7 @@
         body { font-family: Arial, sans-serif; padding: 20px; }
         button { padding: 12px 24px; font-size: 16px; background: #0070d2; color: white; border: none; border-radius: 4px; cursor: pointer; }
         button:hover { background: #005bb8; }
-        #status { margin-top: 15px; font-weight: bold; }
+        #status { margin: 15px 0; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -30,19 +30,16 @@
         frontdoor-url="">
     </lightning-out-application>
 
-    <div id="componentContainer" style="margin-top: 30px; border: 1px solid #ddd; padding: 20px;"></div>
+    <div id="componentContainer" style="margin-top: 30px; border: 1px solid #ddd; padding: 20px; min-height: 100px;"></div>
 
     <script>
         const CLIENT_ID = "3MVG9n_HvETGhr3DGIEyTb2PfjZeBM9JVs57xvMav0P79W20cMf5oy._0T.wk2hQIqYN8DNO7Mg5ntt54Z9cn";
+        const CLIENT_SECRET = "A219134791E1A804F4507D04B0245CA0AC94A5CD0677F6E9081FB67B2987A971";
         const REDIRECT_URI = "https://nvsr1997-creator.github.io/lightningout-demo/callback.html";
         const ORG_URL = "https://siva15071997-dev-ed.my.salesforce.com";
 
         async function startLogin() {
-            document.getElementById('status').innerHTML = 'Redirecting to Salesforce Login...';
-            
-            const verifier = "staticverifier123"; // Simple for testing
-            const challenge = verifier; // For testing only (not secure but works for now)
-
+            document.getElementById('status').innerHTML = 'Redirecting to Salesforce...';
             const authUrl = `${ORG_URL}/services/oauth2/authorize?` +
                 `response_type=code` +
                 `&client_id=${encodeURIComponent(CLIENT_ID)}` +
@@ -53,13 +50,12 @@
             window.location.href = authUrl;
         }
 
-        // Check if we came back with code in URL
         window.onload = async function() {
             const urlParams = new URLSearchParams(window.location.search);
             const code = urlParams.get('code');
 
             if (code) {
-                document.getElementById('status').innerHTML = 'Processing token...';
+                document.getElementById('status').innerHTML = 'Exchanging token...';
                 await exchangeCodeForToken(code);
             }
         };
@@ -72,27 +68,31 @@
                     body: new URLSearchParams({
                         grant_type: 'authorization_code',
                         client_id: CLIENT_ID,
+                        client_secret: CLIENT_SECRET,        // ←←← This was missing
                         redirect_uri: REDIRECT_URI,
                         code: code
                     })
                 });
 
                 const data = await response.json();
-                
+
                 if (data.access_token) {
                     document.getElementById('status').innerHTML = '✅ Login Successful! Loading Component...';
                     
                     const frontdoorUrl = `${ORG_URL}/secur/frontdoor.jsp?sid=${data.access_token}`;
                     
-                    // Set frontdoor URL
                     const loApp = document.getElementById('loApp');
                     loApp.setAttribute('frontdoor-url', frontdoorUrl);
 
-                    // Dynamically add component
-                    const container = document.getElementById('componentContainer');
-                    container.innerHTML = '<c-name-display></c-name-display>';
+                    // Add component after frontdoor URL is set
+                    setTimeout(() => {
+                        const container = document.getElementById('componentContainer');
+                        container.innerHTML = `<c-name-display></c-name-display>`;
+                    }, 800);
+
                 } else {
-                    document.getElementById('status').innerHTML = '❌ Token exchange failed';
+                    document.getElementById('status').innerHTML = '❌ Token exchange failed: ' + (data.error || 'Unknown');
+                    console.error(data);
                 }
             } catch (err) {
                 console.error(err);
