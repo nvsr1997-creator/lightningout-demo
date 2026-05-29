@@ -8,10 +8,27 @@
     <script type="text/javascript" async src="https://siva15071997-dev-ed.my.salesforce.com/lightning/lightning.out.latest/index.iife.prod.js"></script>
     
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        button { padding: 12px 24px; font-size: 16px; background: #0070d2; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px; 
+            background: #f4f6f9;
+        }
+        button { 
+            padding: 12px 24px; 
+            font-size: 16px; 
+            background: #0070d2; 
+            color: white; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+        }
         button:hover { background: #005bb8; }
-        #status { margin: 15px 0; font-weight: bold; color: #333; }
+        #status { 
+            margin: 15px 0; 
+            font-weight: bold; 
+            padding: 10px; 
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
@@ -30,15 +47,18 @@
         frontdoor-url="">
     </lightning-out-application>
 
-    <div id="componentContainer" style="margin-top: 30px; border: 1px solid #ddd; padding: 20px; min-height: 100px;"></div>
+    <div id="componentContainer" style="margin-top: 30px; border: 1px solid #ddd; padding: 20px; min-height: 120px; background: white;"></div>
 
     <script>
+        const CLIENT_ID = "3MVG9n_HvETGhr3DGIEyTb2PfjZeBM9JVs57xvMav0P79W20cMf5oy._0T.wk2hQIqYN8DNO7Mg5ntt54Z9cn";
+        const CLIENT_SECRET = "A219134791E1A804F4507D04B0245CA0AC94A5CD0677F6E9081FB67B2987A971";
         const REDIRECT_URI = "https://nvsr1997-creator.github.io/lightningout-demo/callback.html";
         const ORG_URL = "https://siva15071997-dev-ed.my.salesforce.com";
 
         async function startLogin() {
             document.getElementById('status').innerHTML = 'Redirecting to Salesforce Login...';
-            
+            document.getElementById('status').style.color = 'blue';
+
             const authUrl = `${ORG_URL}/services/oauth2/authorize?` +
                 `response_type=code` +
                 `&client_id=${encodeURIComponent(CLIENT_ID)}` +
@@ -67,7 +87,7 @@
                     body: new URLSearchParams({
                         grant_type: 'authorization_code',
                         client_id: CLIENT_ID,
-                        // client_secret: CLIENT_SECRET,   // ← Try without secret first
+                        client_secret: CLIENT_SECRET,
                         redirect_uri: REDIRECT_URI,
                         code: code
                     })
@@ -77,24 +97,28 @@
 
                 if (data.access_token) {
                     document.getElementById('status').innerHTML = '✅ Login Successful! Loading Component...';
+                    document.getElementById('status').style.color = 'green';
                     
                     const frontdoorUrl = `${ORG_URL}/secur/frontdoor.jsp?sid=${data.access_token}`;
                     
                     const loApp = document.getElementById('loApp');
                     loApp.setAttribute('frontdoor-url', frontdoorUrl);
 
+                    // Load the component
                     setTimeout(() => {
                         const container = document.getElementById('componentContainer');
                         container.innerHTML = `<c-name-display></c-name-display>`;
-                    }, 1000);
+                    }, 800);
 
                 } else {
-                    document.getElementById('status').innerHTML = '❌ Token exchange failed: ' + (data.error_description || data.error || 'Unknown error');
+                    document.getElementById('status').innerHTML = '❌ Token exchange failed: ' + (data.error_description || data.error);
+                    document.getElementById('status').style.color = 'red';
                     console.error(data);
                 }
             } catch (err) {
                 console.error(err);
                 document.getElementById('status').innerHTML = '❌ Error: ' + err.message;
+                document.getElementById('status').style.color = 'red';
             }
         }
     </script>
