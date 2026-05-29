@@ -41,7 +41,6 @@
     <script>
         // Configuration Variables
         const ORG_URL = "https://siva15071997-dev-ed.my.salesforce.com";
-        const LIGHTNING_URL = "https://siva15071997-dev-ed.lightning.force.com"; // 👈 కొత్తగా లైట్నింగ్ డొమైన్ యాడ్ చేశాం
         const REDIRECT_URI = "https://nvsr1997-creator.github.io/lightningout-demo/";
         const CLIENT_ID = "3MVG9n_HvETGhr3DGIEyTb2PfjZeBM9JVs57xvMav0P79W20cMf5oy._0T.wk2hQIqYN8DNO7Mg5ntt54Z9cn"; 
 
@@ -58,21 +57,22 @@
                     document.getElementById("loginSection").style.display = "none";
                     document.getElementById("lightningOutContainer").style.display = "block";
                     
-                    // 🚀 ఫిక్స్: ఇక్కడ ORG_URL కి బదులుగా LIGHTNING_URL వాడుతున్నాం
-                    const frontdoorUrl = `${LIGHTNING_URL}/services/oauth2/frontdoor?access_token=${token}`;
+                    // Frontdoor URL క్రియేషన్ (లైబ్రరీ దీన్ని ఆటోమేటిక్‌గా హ్యాండిల్ చేస్తుంది)
+                    const frontdoorUrl = `${ORG_URL}/services/oauth2/frontdoor?access_token=${token}`;
                     
                     const loApp = document.querySelector("lightning-out-application");
                     if (loApp) {
                         loApp.setAttribute("frontdoor-url", frontdoorUrl);
-                        console.log("🔒 Frontdoor URL successfully injected into Lightning Domain!");
+                        console.log("🔒 Frontdoor URL successfully injected!");
                     }
                 }
             }
         }
 
-        // 2. Redirects user to Salesforce OAuth Login Screen
+        // 2. Redirects user to Salesforce OAuth Login Screen తో పాటు పర్మిషన్ స్కోప్స్ అడుగుతున్నాం
         function loginToSalesforce() {
-            const authUrl = `${ORG_URL}/services/oauth2/authorize?response_type=token&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`;
+            // 🚀 ఫిక్స్: చివర్లో &scope=api%20web యాడ్ చేశాం
+            const authUrl = `${ORG_URL}/services/oauth2/authorize?response_type=token&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=api%20web`;
             window.location.href = authUrl;
         }
     </script>
