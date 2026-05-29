@@ -1,7 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lightning Out 2.0 Demo</title>
+    
+    <!-- Lightning Out 2.0 Script (Nee org correct ga undi) -->
+    <script type="text/javascript" async src="https://siva15071997-dev-ed.my.salesforce.com/lightning/lightning.out.latest/index.iife.prod.js"></script>
+</head>
+<body>
+    <h1>Lightning Out 2.0 Testing</h1>
+    <p>Simple Name Display Component</p>
 
-<template>
-    <div class="box">
-        <h2>Hello from Salesforce LWC</h2>
-        <p>Message: {message}</p>
-    </div>
-</template>
+    <!-- Main Wrapper -->
+    <lightning-out-application 
+        id="loApp"
+        app-id="1UsIf0000004DAMKA2" 
+        components="c-name-display"
+        frontdoor-url="">   <!-- ←←← Idi important! Dynamic ga set cheyali -->
+    </lightning-out-application>
+
+    <!-- Nee Component -->
+    <c-name-display></c-name-display>
+
+    <script>
+        // Event listeners (debug kosam)
+        document.addEventListener('lo.application.ready', () => {
+            console.log('✅ Lightning Out 2.0 Application Ready!');
+        });
+
+        document.addEventListener('lo.component.ready', (event) => {
+            console.log('✅ Component Loaded:', event.detail);
+        });
+
+        document.addEventListener('lo.component.error', (event) => {
+            console.error('❌ Error:', event.detail);
+        });
+    </script>
+</body>
+</html>
