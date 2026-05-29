@@ -11,6 +11,7 @@
         body { font-family: Arial, sans-serif; padding: 20px; }
         button { padding: 12px 24px; font-size: 16px; background: #0070d2; color: white; border: none; border-radius: 4px; cursor: pointer; }
         button:hover { background: #005bb8; }
+        #status { margin-top: 15px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -18,7 +19,10 @@
     <p>Simple Name Display Component</p>
 
     <button onclick="startLogin()">Login to Salesforce & Load Component</button>
+    
+    <div id="status"></div>
 
+    <!-- Lightning Out Container - MUST BE EMPTY -->
     <lightning-out-application 
         id="loApp"
         app-id="1UsIf0000004DAMKA2" 
@@ -26,47 +30,75 @@
         frontdoor-url="">
     </lightning-out-application>
 
-    <div id="componentContainer" style="margin-top: 20px;"></div>
+    <div id="componentContainer" style="margin-top: 30px; border: 1px solid #ddd; padding: 20px;"></div>
 
     <script>
         const CLIENT_ID = "3MVG9n_HvETGhr3DGIEyTb2PfjZeBM9JVs57xvMav0P79W20cMf5oy._0T.wk2hQIqYN8DNO7Mg5ntt54Z9cn";
         const REDIRECT_URI = "https://nvsr1997-creator.github.io/lightningout-demo/callback.html";
         const ORG_URL = "https://siva15071997-dev-ed.my.salesforce.com";
 
-        // Generate PKCE Code Verifier and Challenge
-        async function generatePKCE() {
-            const verifier = btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32))))
-                .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
-            const encoder = new TextEncoder();
-            const data = await crypto.subtle.digest('SHA-256', encoder.encode(verifier));
-            const challenge = btoa(String.fromCharCode(...new Uint8Array(data)))
-                .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
-            return { verifier, challenge };
-        }
-
         async function startLogin() {
-            const { verifier, challenge } = await generatePKCE();
-            sessionStorage.setItem('pkce_verifier', verifier);
+            document.getElementById('status').innerHTML = 'Redirecting to Salesforce Login...';
+            
+            const verifier = "staticverifier123"; // Simple for testing
+            const challenge = verifier; // For testing only (not secure but works for now)
 
             const authUrl = `${ORG_URL}/services/oauth2/authorize?` +
                 `response_type=code` +
                 `&client_id=${encodeURIComponent(CLIENT_ID)}` +
                 `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
                 `&scope=web full api` +
-                `&code_challenge=${challenge}` +
-                `&code_challenge_method=S256` +
                 `&state=lo2demo`;
 
             window.location.href = authUrl;
         }
 
-        // This will run in callback.html after redirect
-        window.addEventListener('message', async (event) => {
-            if (event.data.type === 'oauth_callback') {
-                const code = event.data.code;
+        // Check if we came back with code in URL
+        window.onload = async function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+
+            if (code) {
+                document.getElementById('status').innerHTML = 'Processing token...';
                 await exchangeCodeForToken(code);
             }
-        });
+        };
+
+        async function exchangeCodeForToken(code) {
+            try {
+                const response = await fetch(`${ORG_URL}/services/oauth2/token`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({
+                        grant_type: 'authorization_code',
+                        client_id: CLIENT_ID,
+                        redirect_uri: REDIRECT_URI,
+                        code: code
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.access_token) {
+                    document.getElementById('status').innerHTML = '✅ Login Successful! Loading Component...';
+                    
+                    const frontdoorUrl = `${ORG_URL}/secur/frontdoor.jsp?sid=${data.access_token}`;
+                    
+                    // Set frontdoor URL
+                    const loApp = document.getElementById('loApp');
+                    loApp.setAttribute('frontdoor-url', frontdoorUrl);
+
+                    // Dynamically add component
+                    const container = document.getElementById('componentContainer');
+                    container.innerHTML = '<c-name-display></c-name-display>';
+                } else {
+                    document.getElementById('status').innerHTML = '❌ Token exchange failed';
+                }
+            } catch (err) {
+                console.error(err);
+                document.getElementById('status').innerHTML = '❌ Error: ' + err.message;
+            }
+        }
     </script>
 </body>
 </html>
